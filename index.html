@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Olivia's Love Vouchers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f3f2ef;
+    --grid: #e2e0db;
+    --ink: #15181f;
+    --ink-soft: #2a2d36;
+    --coral: #ec4e2f;
+    --voucher: #f8f6f1;
+    --gift: #d9d6d0;
+    --gift-icon: #ecebe7;
+    --muted: #4a4d56;
+    --shadow: 0 18px 30px -18px rgba(20, 22, 30, 0.18), 0 6px 12px -6px rgba(20, 22, 30, 0.1);
+    --stamp: #c0392b;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: -1px -1px;
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  h1.title {
+    font-family: 'Archivo Black', 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 7vw, 4.6rem);
+    letter-spacing: -0.01em;
+    text-align: center;
+    margin: 8px 0 44px;
+    color: var(--ink);
+    line-height: 0.95;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: -32px 0 36px;
+    letter-spacing: 0.02em;
+  }
+
+  .voucher {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 18px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+
+  .ticket, .gift {
+    background: var(--voucher);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: transform 0.18s ease, opacity 0.25s ease;
+  }
+
+  .ticket {
+    padding: 22px 24px 20px;
+    overflow: hidden;
+  }
+
+  .ticket::before, .ticket::after {
+    content: '';
+    position: absolute;
+    right: -11px;
+    width: 22px;
+    height: 22px;
+    background: var(--bg);
+    border-radius: 50%;
+    z-index: 2;
+  }
+  .ticket::before { top: 50%; transform: translateY(-50%); }
+  .ticket::after { display: none; }
+
+  .ticket-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+
+  .ticket-top svg { flex-shrink: 0; }
+  .ticket-top .accent { color: var(--coral); font-weight: 700; }
+
+  .ticket h2 {
+    font-family: 'Archivo Black', sans-serif;
+    color: var(--coral);
+    font-size: clamp(1.6rem, 3.6vw, 2.4rem);
+    line-height: 0.98;
+    margin: 6px 0 14px;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  .valid {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.92rem;
+    margin: 0 0 18px;
+  }
+
+  .ticket-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .barcode {
+    display: flex;
+    align-items: end;
+    gap: 1px;
+    height: 32px;
+  }
+  .barcode i {
+    display: block;
+    width: 2px;
+    background: var(--ink);
+    height: 100%;
+  }
+
+  .sponsor {
+    text-align: right;
+    font-size: 0.78rem;
+    color: var(--ink);
+  }
+  .sponsor-label {
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+  .sponsor-name {
+    font-weight: 700;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .gift {
+    background: var(--gift);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 18px 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .gift svg.box {
+    width: 78px;
+    height: 78px;
+    color: var(--gift-icon);
+  }
+
+  .gift .percent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -34%);
+    font-family: 'Archivo Black', sans-serif;
+    color: var(--coral);
+    font-size: 1.45rem;
+    line-height: 1;
+    text-align: center;
+  }
+  .gift .percent small { display: block; font-size: 1.45rem; }
+
+  .gift .footer {
+    margin-top: 14px;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  button.act {
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.84rem;
+    padding: 9px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  button.act:hover {
+    background: var(--ink);
+    color: var(--voucher);
+  }
+
+  button.act.primary {
+    background: var(--coral);
+    border-color: var(--coral);
+    color: white;
+  }
+  button.act.primary:hover {
+    background: #d23e21;
+    border-color: #d23e21;
+  }
+
+  button.act.cashed {
+    background: var(--ink);
+    color: var(--voucher);
+  }
+
+  /* cashed-in state */
+  .voucher.is-cashed .ticket,
+  .voucher.is-cashed .gift {
+    opacity: 0.55;
+  }
+
+  .voucher.is-cashed .ticket h2 {
+    text-decoration: line-through;
+    text-decoration-thickness: 3px;
+    text-decoration-color: var(--ink-soft);
+  }
+
+  .stamp {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    transform: rotate(-14deg);
+    border: 3px solid var(--stamp);
+    color: var(--stamp);
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    text-transform: uppercase;
+    transition: opacity 0.25s ease;
+    background: rgba(255, 255, 255, 0.6);
+    z-index: 3;
+  }
+  .voucher.is-cashed .stamp { opacity: 1; }
+
+  .reset {
+    display: block;
+    margin: 36px auto 0;
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .reset:hover { color: var(--ink); }
+
+  /* Modal for adding phone numbers */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 22, 30, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal.open { display: flex; }
+  .modal-card {
+    background: var(--voucher);
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4);
+  }
+  .modal-card h3 {
+    margin: 0 0 6px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.3rem;
+  }
+  .modal-card p {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .modal-card input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--grid);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    margin-bottom: 14px;
+  }
+  .modal-card input:focus {
+    outline: none;
+    border-color: var(--coral);
+  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  @media (max-width: 600px) {
+    .page { padding: 32px 16px 64px; }
+    .voucher { grid-template-columns: 1.4fr 1fr; gap: 12px; }
+    .ticket { padding: 16px 18px; }
+    .gift { padding: 16px 12px; }
+    .gift svg.box { width: 64px; height: 64px; }
+    .gift .percent { font-size: 1.15rem; }
+    .gift .percent small { font-size: 1.15rem; }
+    .gift .footer { font-size: 0.66rem; }
+    .ticket h2 { font-size: 1.5rem; }
+    .actions { gap: 8px; }
+    button.act { font-size: 0.78rem; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <h1 class="title">OLIVIA'S LOVE VOUCHERS</h1>
+
+    <div id="vouchers"></div>
+
+    <button class="reset" id="resetBtn">reset all vouchers</button>
+  </main>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <h3>add sponsor's number</h3>
+      <p>Save <span id="modalName"></span>'s phone number so Olivia can text them straight from the voucher. Stored locally on this device only.</p>
+      <input type="tel" id="phoneInput" placeholder="+1 555 123 4567" />
+      <div class="modal-actions">
+        <button class="act" id="modalCancel">cancel</button>
+        <button class="act primary" id="modalSave">save & text</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const VOUCHERS = [
+    { id: 'movie', title: 'Movie Night with Friends', sponsor: 'Nicole', phone: '' },
+    { id: 'comingout', title: 'Coming Out Party', sponsor: 'Esther', phone: '' },
+    { id: 'nigerian', title: 'Nigerian Dinner', sponsor: 'Arinze', phone: '+16505092374' },
+    { id: 'crysesh', title: 'Silent Work and Cry Sesh', sponsor: 'Alix', phone: '' },
+  ];
+
+  const STORAGE_KEY = 'olivia-love-vouchers-v1';
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch { return {}; }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let state = loadState();
+
+  function getCashed(id) { return !!(state[id] && state[id].cashed); }
+  function getPhone(v) {
+    if (state[v.id] && state[v.id].phone) return state[v.id].phone;
+    return v.phone || '';
+  }
+
+  function setCashed(id, val) {
+    state[id] = { ...(state[id] || {}), cashed: val };
+    saveState(state);
+  }
+  function setPhone(id, phone) {
+    state[id] = { ...(state[id] || {}), phone };
+    saveState(state);
+  }
+
+  // SVG bits
+  const scanIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>`;
+
+  const giftSvg = `<svg class="box" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"><path d="M14 38h72v50H14z"/><path d="M10 28h80v10H10z"/><path d="M50 28v60"/><path d="M50 28c-6-10-22-12-22-2 0 6 10 8 22 2z"/><path d="M50 28c6-10 22-12 22-2 0 6-10 8-22 2z"/></svg>`;
+
+  function makeBarcode() {
+    const widths = [];
+    let str = '';
+    for (let i = 0; i < 38; i++) {
+      const w = (Math.random() * 4 + 1) | 0;
+      str += `<i style="width:${w}px"></i>`;
+    }
+    return `<div class="barcode">${str}</div>`;
+  }
+
+  function render() {
+    const container = document.getElementById('vouchers');
+    container.innerHTML = '';
+    VOUCHERS.forEach(v => {
+      const cashed = getCashed(v.id);
+      const phone = getPhone(v);
+      const div = document.createElement('div');
+      div.className = 'voucher' + (cashed ? ' is-cashed' : '');
+      div.innerHTML = `
+        <div class="ticket">
+          <div class="stamp">cashed in</div>
+          <div class="ticket-top">${scanIcon}<span>ping the sponsor to cash in your <span class="accent">love coupon</span></span></div>
+          <h2>${v.title}</h2>
+          <p class="valid">Valid for life</p>
+          <div class="ticket-bottom">
+            ${makeBarcode()}
+            <div class="sponsor">
+              <div class="sponsor-label">SPONSOR:</div>
+              <div class="sponsor-name">${v.sponsor}</div>
+            </div>
+          </div>
+        </div>
+        <div class="gift">
+          ${giftSvg}
+          <div class="percent">100%<small>OFF</small></div>
+          <div class="footer">from Olivia's Support Group</div>
+        </div>
+        <div class="actions">
+          <button class="act primary" data-action="text" data-id="${v.id}">
+            text ${v.sponsor}${phone ? '' : ' (add #)'}
+          </button>
+          <button class="act ${cashed ? 'cashed' : ''}" data-action="toggle" data-id="${v.id}">
+            ${cashed ? '✓ cashed in — undo' : 'mark as cashed in'}
+          </button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function buildSmsLink(phone, voucherTitle, sponsor) {
+    const body = encodeURIComponent(
+      `hi ${sponsor} <3 i'm cashing in my "${voucherTitle}" love voucher — when works for you?`
+    );
+    // sms: protocol; iOS uses ?&body=, Android uses ?body=. Both accept ?&body= reasonably.
+    return `sms:${phone}?&body=${body}`;
+  }
+
+  function openTextFor(v) {
+    let phone = getPhone(v);
+    if (!phone) {
+      promptForPhone(v);
+      return;
+    }
+    const link = buildSmsLink(phone, v.title, v.sponsor);
+    window.location.href = link;
+  }
+
+  // modal
+  const modal = document.getElementById('modal');
+  const phoneInput = document.getElementById('phoneInput');
+  const modalName = document.getElementById('modalName');
+  let pendingVoucher = null;
+
+  function promptForPhone(v) {
+    pendingVoucher = v;
+    modalName.textContent = v.sponsor;
+    phoneInput.value = '';
+    modal.classList.add('open');
+    setTimeout(() => phoneInput.focus(), 50);
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    pendingVoucher = null;
+  }
+
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.getElementById('modalSave').addEventListener('click', () => {
+    const phone = phoneInput.value.trim();
+    if (!phone || !pendingVoucher) return;
+    setPhone(pendingVoucher.id, phone);
+    const v = pendingVoucher;
+    closeModal();
+    render();
+    openTextFor({ ...v, phone });
+  });
+  phoneInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('modalSave').click();
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // delegated clicks
+  document.getElementById('vouchers').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const v = VOUCHERS.find(x => x.id === id);
+    if (!v) return;
+    if (btn.dataset.action === 'text') {
+      openTextFor(v);
+    } else if (btn.dataset.action === 'toggle') {
+      setCashed(id, !getCashed(id));
+      render();
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (!confirm('reset all vouchers? this clears cashed-in marks and saved phone numbers.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = {};
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
