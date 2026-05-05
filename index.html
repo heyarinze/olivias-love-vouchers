@@ -295,51 +295,6 @@
 
   .reset:hover { color: var(--ink); }
 
-  /* Modal for adding phone numbers */
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(20, 22, 30, 0.55);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-    padding: 20px;
-  }
-  .modal.open { display: flex; }
-  .modal-card {
-    background: var(--voucher);
-    border-radius: 14px;
-    padding: 28px;
-    max-width: 380px;
-    width: 100%;
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4);
-  }
-  .modal-card h3 {
-    margin: 0 0 6px;
-    font-family: 'Archivo Black', sans-serif;
-    font-size: 1.3rem;
-  }
-  .modal-card p {
-    margin: 0 0 16px;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-  .modal-card input {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1.5px solid var(--grid);
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 1rem;
-    margin-bottom: 14px;
-  }
-  .modal-card input:focus {
-    outline: none;
-    border-color: var(--coral);
-  }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-
   @media (max-width: 600px) {
     .page { padding: 32px 16px 64px; }
     .voucher { grid-template-columns: 1.4fr 1fr; gap: 12px; }
@@ -364,24 +319,20 @@
     <button class="reset" id="resetBtn">reset all vouchers</button>
   </main>
 
-  <div class="modal" id="modal">
-    <div class="modal-card">
-      <h3>add sponsor's number</h3>
-      <p>Save <span id="modalName"></span>'s phone number so Olivia can text them straight from the voucher. Stored locally on this device only.</p>
-      <input type="tel" id="phoneInput" placeholder="+1 555 123 4567" />
-      <div class="modal-actions">
-        <button class="act" id="modalCancel">cancel</button>
-        <button class="act primary" id="modalSave">save & text</button>
-      </div>
-    </div>
-  </div>
-
 <script>
+  const NICOLE = { name: 'Nicole', phone: '+19292044203' };
+  const ESTHER = { name: 'Esther', phone: '+12024944352' };
+  const ARINZE = { name: 'Arinze', phone: '+16505092374' };
+  const ALIX   = { name: 'Alix',   phone: '+12409100500' };
+
   const VOUCHERS = [
-    { id: 'movie', title: 'Movie Night with Friends', sponsor: 'Nicole', phone: '+19292044203' },
-    { id: 'comingout', title: 'Coming Out Party', sponsor: 'Esther', phone: '+12024944352' },
-    { id: 'nigerian', title: 'Nigerian Dinner', sponsor: 'Arinze', phone: '+16505092374' },
-    { id: 'crysesh', title: 'Silent Work and Cry Sesh', sponsor: 'Alix', phone: '+12409100500' },
+    { id: 'movie',     title: 'Movie Night with Friends',  sponsors: [NICOLE] },
+    { id: 'comingout', title: 'Coming Out Party',          sponsors: [ESTHER] },
+    { id: 'nigerian',  title: 'Igbo Dinner',               sponsors: [ARINZE] },
+    { id: 'crysesh',   title: 'Silent Work and Cry Sesh',  sponsors: [ALIX]   },
+    { id: 'walkyap',   title: 'Walk + Yap',                sponsors: [NICOLE] },
+    { id: 'manipedis', title: 'Mani Pedis',                sponsors: [NICOLE, ARINZE] },
+    { id: '420sesh',   title: '420 Sesh',                  sponsors: [ARINZE] },
   ];
 
   const STORAGE_KEY = 'olivia-love-vouchers-v1';
@@ -399,17 +350,8 @@
   let state = loadState();
 
   function getCashed(id) { return !!(state[id] && state[id].cashed); }
-  function getPhone(v) {
-    if (state[v.id] && state[v.id].phone) return state[v.id].phone;
-    return v.phone || '';
-  }
-
   function setCashed(id, val) {
     state[id] = { ...(state[id] || {}), cashed: val };
-    saveState(state);
-  }
-  function setPhone(id, phone) {
-    state[id] = { ...(state[id] || {}), phone };
     saveState(state);
   }
 
@@ -433,7 +375,11 @@
     container.innerHTML = '';
     VOUCHERS.forEach(v => {
       const cashed = getCashed(v.id);
-      const phone = getPhone(v);
+      const multi = v.sponsors.length > 1;
+      const sponsorNames = v.sponsors.map(s => s.name.toUpperCase()).join(' + ');
+      const textButtons = v.sponsors.map((s, i) =>
+        `<button class="act primary" data-action="text" data-id="${v.id}" data-sponsor="${i}">text ${s.name}</button>`
+      ).join('');
       const div = document.createElement('div');
       div.className = 'voucher' + (cashed ? ' is-cashed' : '');
       div.innerHTML = `
@@ -445,8 +391,8 @@
           <div class="ticket-bottom">
             ${makeBarcode()}
             <div class="sponsor">
-              <div class="sponsor-label">SPONSOR:</div>
-              <div class="sponsor-name">${v.sponsor}</div>
+              <div class="sponsor-label">SPONSOR${multi ? 'S' : ''}:</div>
+              <div class="sponsor-name">${sponsorNames}</div>
             </div>
           </div>
         </div>
@@ -456,9 +402,7 @@
           <div class="footer">from Olivia's Support Group</div>
         </div>
         <div class="actions">
-          <button class="act primary" data-action="text" data-id="${v.id}">
-            text ${v.sponsor}${phone ? '' : ' (add #)'}
-          </button>
+          ${textButtons}
           <button class="act ${cashed ? 'cashed' : ''}" data-action="toggle" data-id="${v.id}">
             ${cashed ? '✓ cashed in — undo' : 'mark as cashed in'}
           </button>
@@ -468,57 +412,15 @@
     });
   }
 
-  function buildSmsLink(phone, voucherTitle, sponsor) {
+  function openTextFor(v, sponsorIdx) {
+    const s = v.sponsors[sponsorIdx];
+    if (!s || !s.phone) return;
     const body = encodeURIComponent(
-      `hi ${sponsor} <3 i'm cashing in my "${voucherTitle}" love voucher — when works for you?`
+      `hi ${s.name} <3 i'm cashing in my "${v.title}" love voucher — when works for you?`
     );
     // sms: protocol; iOS uses ?&body=, Android uses ?body=. Both accept ?&body= reasonably.
-    return `sms:${phone}?&body=${body}`;
+    window.location.href = `sms:${s.phone}?&body=${body}`;
   }
-
-  function openTextFor(v) {
-    let phone = getPhone(v);
-    if (!phone) {
-      promptForPhone(v);
-      return;
-    }
-    const link = buildSmsLink(phone, v.title, v.sponsor);
-    window.location.href = link;
-  }
-
-  // modal
-  const modal = document.getElementById('modal');
-  const phoneInput = document.getElementById('phoneInput');
-  const modalName = document.getElementById('modalName');
-  let pendingVoucher = null;
-
-  function promptForPhone(v) {
-    pendingVoucher = v;
-    modalName.textContent = v.sponsor;
-    phoneInput.value = '';
-    modal.classList.add('open');
-    setTimeout(() => phoneInput.focus(), 50);
-  }
-  function closeModal() {
-    modal.classList.remove('open');
-    pendingVoucher = null;
-  }
-
-  document.getElementById('modalCancel').addEventListener('click', closeModal);
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-  document.getElementById('modalSave').addEventListener('click', () => {
-    const phone = phoneInput.value.trim();
-    if (!phone || !pendingVoucher) return;
-    setPhone(pendingVoucher.id, phone);
-    const v = pendingVoucher;
-    closeModal();
-    render();
-    openTextFor({ ...v, phone });
-  });
-  phoneInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('modalSave').click();
-    if (e.key === 'Escape') closeModal();
-  });
 
   // delegated clicks
   document.getElementById('vouchers').addEventListener('click', e => {
@@ -528,7 +430,7 @@
     const v = VOUCHERS.find(x => x.id === id);
     if (!v) return;
     if (btn.dataset.action === 'text') {
-      openTextFor(v);
+      openTextFor(v, parseInt(btn.dataset.sponsor, 10));
     } else if (btn.dataset.action === 'toggle') {
       setCashed(id, !getCashed(id));
       render();
@@ -536,7 +438,7 @@
   });
 
   document.getElementById('resetBtn').addEventListener('click', () => {
-    if (!confirm('reset all vouchers? this clears cashed-in marks and saved phone numbers.')) return;
+    if (!confirm('reset all vouchers? this clears cashed-in marks.')) return;
     localStorage.removeItem(STORAGE_KEY);
     state = {};
     render();
