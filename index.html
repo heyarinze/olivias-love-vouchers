@@ -439,6 +439,7 @@
     { id: 'nightin',   title: 'Night In & Laugh/Cry',       sponsors: [MAXIMA] },
     { id: 'facetime',  title: 'Facetime Vent Sesh',         sponsors: [ESTHER] },
     { id: 'wildcard',  title: "Something We Didn't Think About", sponsors: [ESTHER],
+      sponsorDisplay: "Olivia's Support Group",
       body: "hi {name} <3 cashing in my wildcard love voucher — there's actually something i'd love that wasn't on the list..." },
   ];
 
@@ -483,7 +484,9 @@
     VOUCHERS.forEach(v => {
       const cashed = getCashed(v.id);
       const multi = v.sponsors.length > 1;
-      const sponsorNames = v.sponsors.map(s => s.name.toUpperCase()).join(' + ');
+      const sponsorNames = v.sponsorDisplay
+        ? v.sponsorDisplay.toUpperCase()
+        : v.sponsors.map(s => s.name.toUpperCase()).join(' + ');
       const textButtons = v.sponsors.map((s, i) =>
         `<button class="act primary" data-action="text" data-id="${v.id}" data-sponsor="${i}">text ${s.name}</button>`
       ).join('');
