@@ -87,6 +87,42 @@
     );
   }
 
+  .intro {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--coral);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    z-index: 100;
+    /* rectangle as a 6-vertex polygon so it can interpolate to the ribbon's chevron */
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%);
+    transition:
+      top 0.95s cubic-bezier(0.7, 0, 0.25, 1),
+      left 0.95s cubic-bezier(0.7, 0, 0.25, 1),
+      width 0.95s cubic-bezier(0.7, 0, 0.25, 1),
+      height 0.95s cubic-bezier(0.7, 0, 0.25, 1),
+      padding 0.95s cubic-bezier(0.7, 0, 0.25, 1),
+      clip-path 0.95s cubic-bezier(0.7, 0, 0.25, 1),
+      opacity 0.35s ease;
+  }
+  .intro-text {
+    color: #fff;
+    font-family: 'Archivo Black', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: clamp(1.4rem, 4.4vw, 2.8rem);
+    text-align: center;
+    white-space: nowrap;
+    transition:
+      font-size 0.95s cubic-bezier(0.7, 0, 0.25, 1),
+      letter-spacing 0.95s ease;
+  }
+
   @media (max-width: 600px) {
     .ribbon { padding: 10px 26px; letter-spacing: 0.08em; }
   }
@@ -345,6 +381,7 @@
 </style>
 </head>
 <body>
+  <div class="intro" id="intro"><span class="intro-text">Know that you are loved...always</span></div>
   <main class="page">
     <h1 class="title">OLIVIA'S LOVE VOUCHERS</h1>
     <div class="ribbon-wrap"><div class="ribbon">Know that you are loved...always</div></div>
@@ -489,6 +526,34 @@
   });
 
   render();
+
+  // Intro: full-screen coral, then shrinks down into the ribbon position.
+  window.addEventListener('load', () => {
+    const intro = document.getElementById('intro');
+    const ribbon = document.querySelector('.ribbon');
+    const text = intro?.querySelector('.intro-text');
+    if (!intro || !ribbon || !text) return;
+
+    // Hold the full-screen orange for a beat, then measure the ribbon and shrink to it.
+    setTimeout(() => {
+      const r = ribbon.getBoundingClientRect();
+      const cs = getComputedStyle(ribbon);
+      intro.style.top = r.top + 'px';
+      intro.style.left = r.left + 'px';
+      intro.style.width = r.width + 'px';
+      intro.style.height = r.height + 'px';
+      intro.style.padding = '0';
+      intro.style.clipPath = 'polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%)';
+      text.style.fontSize = cs.fontSize;
+      text.style.letterSpacing = cs.letterSpacing;
+
+      // After the shrink lands on the ribbon, fade out and remove so the real ribbon shows through.
+      setTimeout(() => {
+        intro.style.opacity = '0';
+        setTimeout(() => intro.remove(), 380);
+      }, 1000);
+    }, 700);
+  });
 </script>
 </body>
 </html>
