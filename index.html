@@ -66,6 +66,8 @@
     justify-content: center;
     margin: 0 0 44px;
     filter: drop-shadow(0 6px 10px rgba(20, 22, 30, 0.18));
+    position: relative;
+    z-index: 101; /* above .intro overlay so the real ribbon stays visible */
   }
 
   .ribbon {
@@ -87,49 +89,42 @@
     );
   }
 
+  /* Overlay covers the viewport in coral on load. The real ribbon (higher z-index)
+     pokes through unchanged, so the user sees one continuous orange field with the
+     ribbon text in its natural position. The clip-path then morphs from a viewport
+     rectangle to the ribbon's chevron, retracting the surrounding orange. */
   .intro {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    inset: 0;
     background: var(--coral);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 24px;
     z-index: 100;
-    /* rectangle as a 6-vertex polygon so it can interpolate to the ribbon's chevron */
+    pointer-events: none;
     clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%);
-    transition:
-      top 0.95s cubic-bezier(0.7, 0, 0.25, 1),
-      left 0.95s cubic-bezier(0.7, 0, 0.25, 1),
-      width 0.95s cubic-bezier(0.7, 0, 0.25, 1),
-      height 0.95s cubic-bezier(0.7, 0, 0.25, 1),
-      padding 0.95s cubic-bezier(0.7, 0, 0.25, 1),
-      clip-path 0.95s cubic-bezier(0.7, 0, 0.25, 1),
-      opacity 0.35s ease;
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%);
+    transition: clip-path 1s cubic-bezier(0.7, 0, 0.25, 1),
+                -webkit-clip-path 1s cubic-bezier(0.7, 0, 0.25, 1),
+                opacity 0.35s ease;
   }
-  .intro-text {
-    color: #fff;
-    font-family: 'Archivo Black', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: clamp(1.4rem, 4.4vw, 2.8rem);
-    text-align: center;
-    white-space: nowrap;
-    transition:
-      font-size 0.95s cubic-bezier(0.7, 0, 0.25, 1),
-      letter-spacing 0.95s ease;
-  }
+  .intro.gone { opacity: 0; }
 
   @media (max-width: 600px) {
-    .ribbon { padding: 10px 26px; letter-spacing: 0.08em; }
+    .ribbon {
+      padding: 10px 22px;
+      letter-spacing: 0.06em;
+      font-size: 0.74rem;
+    }
+  }
+  @media (max-width: 380px) {
+    .ribbon {
+      padding: 9px 18px;
+      letter-spacing: 0.04em;
+      font-size: 0.68rem;
+    }
   }
 
   .voucher {
     display: grid;
-    grid-template-columns: 1.6fr 1fr;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     gap: 18px;
     margin-bottom: 28px;
     position: relative;
@@ -207,6 +202,7 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 16px;
+    flex-wrap: wrap;
   }
 
   .barcode {
@@ -214,18 +210,25 @@
     align-items: end;
     gap: 1px;
     height: 32px;
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow: hidden;
+    max-width: 100%;
   }
   .barcode i {
     display: block;
     width: 2px;
     background: var(--ink);
     height: 100%;
+    flex-shrink: 0;
   }
 
   .sponsor {
     text-align: right;
     font-size: 0.78rem;
     color: var(--ink);
+    min-width: 0;
+    word-break: break-word;
   }
   .sponsor-label {
     font-weight: 800;
@@ -366,22 +369,43 @@
   .reset:hover { color: var(--ink); }
 
   @media (max-width: 600px) {
-    .page { padding: 32px 16px 64px; }
-    .voucher { grid-template-columns: 1.4fr 1fr; gap: 12px; }
-    .ticket { padding: 16px 18px; }
-    .gift { padding: 16px 12px; }
-    .gift svg.box { width: 64px; height: 64px; }
-    .gift .percent { font-size: 1.15rem; }
-    .gift .percent small { font-size: 1.15rem; }
-    .gift .footer { font-size: 0.66rem; }
-    .ticket h2 { font-size: 1.5rem; }
-    .actions { gap: 8px; }
-    button.act { font-size: 0.78rem; padding: 8px 12px; }
+    .page { padding: 28px 14px 64px; }
+    h1.title { margin: 4px 0 14px; }
+    .voucher { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 10px; margin-bottom: 22px; }
+    .ticket { padding: 14px 16px; }
+    .gift { padding: 14px 10px; }
+    .gift svg.box { width: 60px; height: 60px; }
+    .gift .percent { font-size: 1.05rem; }
+    .gift .percent small { font-size: 1.05rem; }
+    .gift .footer { font-size: 0.62rem; line-height: 1.25; }
+    .ticket-top { font-size: 0.68rem; margin-bottom: 12px; gap: 6px; }
+    .ticket h2 { font-size: 1.3rem; line-height: 1; margin: 4px 0 10px; word-break: break-word; }
+    .valid { font-size: 0.82rem; margin: 0 0 14px; }
+    .ticket-bottom { gap: 10px; }
+    .sponsor { font-size: 0.7rem; }
+    .sponsor-label { font-size: 0.62rem; }
+    .barcode { height: 26px; }
+    .actions { gap: 6px; padding-top: 0; margin-top: 0; }
+    button.act { font-size: 0.72rem; padding: 7px 11px; gap: 5px; }
+    .stamp { font-size: 0.7rem; padding: 3px 8px; top: 8px; right: 10px; }
+  }
+  @media (max-width: 380px) {
+    .page { padding: 24px 12px 56px; }
+    .voucher { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 8px; }
+    .ticket { padding: 12px 14px; }
+    .gift { padding: 12px 8px; }
+    .gift svg.box { width: 52px; height: 52px; }
+    .gift .percent { font-size: 0.92rem; }
+    .gift .percent small { font-size: 0.92rem; }
+    .ticket h2 { font-size: 1.1rem; }
+    .ticket-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .sponsor { text-align: left; }
+    button.act { font-size: 0.68rem; padding: 6px 10px; }
   }
 </style>
 </head>
 <body>
-  <div class="intro" id="intro"><span class="intro-text">Know that you are loved...always</span></div>
+  <div class="intro" id="intro" aria-hidden="true"></div>
   <main class="page">
     <h1 class="title">OLIVIA'S LOVE VOUCHERS</h1>
     <div class="ribbon-wrap"><div class="ribbon">Know that you are loved...always</div></div>
@@ -527,33 +551,46 @@
 
   render();
 
-  // Intro: full-screen coral, then shrinks down into the ribbon position.
-  window.addEventListener('load', () => {
+  // Intro: full-viewport orange that retracts to the ribbon's exact shape.
+  // The real ribbon stays in place throughout (higher z-index); only the
+  // overlay's clip-path animates from a viewport rectangle to the ribbon's
+  // chevron at the ribbon's coordinates. Works the same on mobile and web.
+  (function runIntro() {
     const intro = document.getElementById('intro');
     const ribbon = document.querySelector('.ribbon');
-    const text = intro?.querySelector('.intro-text');
-    if (!intro || !ribbon || !text) return;
+    if (!intro || !ribbon) return;
 
-    // Hold the full-screen orange for a beat, then measure the ribbon and shrink to it.
-    setTimeout(() => {
-      const r = ribbon.getBoundingClientRect();
-      const cs = getComputedStyle(ribbon);
-      intro.style.top = r.top + 'px';
-      intro.style.left = r.left + 'px';
-      intro.style.width = r.width + 'px';
-      intro.style.height = r.height + 'px';
-      intro.style.padding = '0';
-      intro.style.clipPath = 'polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%)';
-      text.style.fontSize = cs.fontSize;
-      text.style.letterSpacing = cs.letterSpacing;
+    const start = async () => {
+      // Wait for fonts so the ribbon's measured size is final
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch {}
 
-      // After the shrink lands on the ribbon, fade out and remove so the real ribbon shows through.
+      // Hold the full-viewport orange briefly so it reads as "the page is orange"
       setTimeout(() => {
-        intro.style.opacity = '0';
-        setTimeout(() => intro.remove(), 380);
-      }, 1000);
-    }, 700);
-  });
+        const r = ribbon.getBoundingClientRect();
+        const chev = 18; // matches .ribbon clip-path indent
+        const yMid = (r.top + r.bottom) / 2;
+        const poly =
+          `polygon(${r.left + chev}px ${r.top}px, ` +
+          `${r.right - chev}px ${r.top}px, ` +
+          `${r.right}px ${yMid}px, ` +
+          `${r.right - chev}px ${r.bottom}px, ` +
+          `${r.left + chev}px ${r.bottom}px, ` +
+          `${r.left}px ${yMid}px)`;
+        intro.style.clipPath = poly;
+        intro.style.webkitClipPath = poly;
+
+        // Once the orange has retracted to ribbon-shape, fade out and remove.
+        // Both shapes are identical in position/colour so there's no visible flash.
+        setTimeout(() => {
+          intro.classList.add('gone');
+          setTimeout(() => intro.remove(), 400);
+        }, 1050);
+      }, 650);
+    };
+
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+  })();
 </script>
 </body>
 </html>
