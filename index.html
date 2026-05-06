@@ -438,6 +438,8 @@
     { id: 'winesesh',  title: 'Wine Sesh',                  sponsors: [MAXIMA] },
     { id: 'nightin',   title: 'Night In & Laugh/Cry',       sponsors: [MAXIMA] },
     { id: 'facetime',  title: 'Facetime Vent Sesh',         sponsors: [ESTHER] },
+    { id: 'wildcard',  title: "Something We Didn't Think About", sponsors: [ESTHER],
+      body: "hi {name} <3 cashing in my wildcard love voucher — there's actually something i'd love that wasn't on the list..." },
   ];
 
   const STORAGE_KEY = 'olivia-love-vouchers-v1';
@@ -520,9 +522,10 @@
   function openTextFor(v, sponsorIdx) {
     const s = v.sponsors[sponsorIdx];
     if (!s || !s.phone) return;
-    const body = encodeURIComponent(
-      `hi ${s.name} <3 i'm cashing in my "${v.title}" love voucher — when works for you?`
-    );
+    const raw = v.body
+      ? v.body.replace(/\{name\}/g, s.name)
+      : `hi ${s.name} <3 i'm cashing in my "${v.title}" love voucher — when works for you?`;
+    const body = encodeURIComponent(raw);
     // sms: protocol; iOS uses ?&body=, Android uses ?body=. Both accept ?&body= reasonably.
     window.location.href = `sms:${s.phone}?&body=${body}`;
   }
